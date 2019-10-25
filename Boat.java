@@ -27,9 +27,12 @@ public class Boat
 
 	// Instantiate global variables here
 
-  weLiveInASociety = true;
-  childOahu = 0;
-  adultOahu = 0;
+  int weLiveInASociety = true;
+  int childOahu = children;
+  int adultOahu = adults;
+  int boatOahu = true;
+  int boatMolokai = false;
+  int boatEmpty = true;
 
 
 	// Create threads here. See section 3.4 of the Nachos for Java
@@ -66,10 +69,10 @@ public class Boat
 	       bg.AdultRowToMolokai();
 	   indicates that an adult has rowed the boat across to Molokai
 	*/
-
+lck.acquire();
   while(weLiveInASociety){
 
-    if(boatOahu, boat, childOahu <= 1){ // boatOahu is true, boat is empty, and childOahu > 1.
+    if(boatOahu, boat, childOahu <= 1){ // boatOahu is true, boat is empty, and childOahu <= 1.
 
       Wakeall.Adult();
       adultOahu -= 1;
@@ -80,14 +83,15 @@ public class Boat
     }
 
   }
-
+lck.release();
   }
 
     static void ChildItinerary()
     {
 
+      lck.acquire();
       while(weLiveInASociety){
-        if(boatOahu,boat, childOahu > 1){ // boatOahu is true, boat is empty, and childOahu > 1.
+        if(boatOahu,boatEmpty, childOahu > 1){ // boatOahu is true, boat is empty, and childOahu > 1.
           Wakeall.Children();
           bg.ChildRideToMolokai();
           childOahu -= 1;
@@ -95,7 +99,7 @@ public class Boat
           childOahu -=1;
           boatOahu=false;
 
-        }else if(boatOahu,boat, adultOahu = 0){  // boatOahu is true, boat is empty, and adultOahu is 0.
+        }else if(boatOahu,boatEmpty, adultOahu = 0){  // boatOahu is true, boat is empty, and adultOahu is 0.
           bg.ChildRowToMolokai();
           childOahu -= 1;
           sleep.Children();
@@ -106,10 +110,10 @@ public class Boat
           sleep.childrenMolokai();
         }
       }
-
+      lck.realease();
     }
 
-/*
+
     static void SampleItinerary()
     {
 	// Please note that this isn't a valid solution (you can't fit
@@ -122,6 +126,6 @@ public class Boat
 	bg.AdultRideToMolokai();
 	bg.ChildRideToMolokai();
     }
-*/
+
 
 }
