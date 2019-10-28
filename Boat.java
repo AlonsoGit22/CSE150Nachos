@@ -159,10 +159,10 @@ onlyLock.release();
   private static boolean boatEmpty;
   private static int childOahu;
   private static int adultOahu;
-  private static childMolokai = 0;
-  private static adultMolokai = 0;
-  private static lastSeenOahuAdults = 0;
-	private static lastSeenOahuChildren = 0;
+  private static int childMolokai = 0;
+  private static int adultMolokai = 0;
+  private static int lastSeenOahuAdults = 0;
+	private static int lastSeenOahuChildren = 0;
   private static Condition adultOahu, adultMolokai, childOahu, childMolokai;
 
 }
