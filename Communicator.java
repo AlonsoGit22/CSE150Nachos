@@ -10,15 +10,30 @@ import nachos.machine.*;
  * threads can be paired off at this point.
  */
 public class Communicator {
+
+	private Lock lock; //the lock for the communicators
+    private Condition speakerQueue; //queue for speakers
+    private Condition listenerQueue; //queue for listeners
+
+    private boolean speakerWaiting; //used to tell if there is a speaker waiting
+    private boolean listenerWaiting; //used to tell if there is a listener waiting
+    
+    private Condition speakerSend; //used to send message
+    private Condition listenerreceive; //used to receive message
+
+    private boolean delivered; //used to confirm speaker message is delivered
+
+    private int message; //the message
     /**
      * Allocate a new communicator.
      */
     public Communicator() {
     lock = new Lock();
-    speakerReady = new Condition(lock);
-    listenerReady = new Condition(lock);
+    speakerQueue = new Condition(lock);
+    listenerQueue = new Condition(lock);
     speakerWaiting = false;
     listenerWaiting = false;
+    delivered = false;
 
 
     }
@@ -35,12 +50,21 @@ public class Communicator {
      */
     public void speak(int word) {
     	lock.acquire();
-    	while(listenerWaiting = false)
-    		listenWaiting.sleep();
-    	listenerWaiting = false;
+    	while(speakerWaiting){
+    		speakerQueue.sleep(); //puts next speaker in queue
+    	}
+    	speakerWaiting = true;
+    	
+    	while(!listenerWaiting){ //if there are no listeners waiting, then wake the receive queue to send message
+    		listenerReceive.wake();
+    		speakerSend.sleep();
+    		delivered = true;
+    	}
     	message  = word;
-    	speakerReady.wake();
-    	lock.release();
+    	
+
+    	speakerQueue.wake(); //wakes next speaker
+    	lock.release(); 
     }
 
     /**
@@ -52,24 +76,20 @@ public class Communicator {
     public int listen() {
 
    		lock.acquire();
-   		listenReady.wake();
-   		while(speakerWaiting = false)
-   			speakerReady.sleep();
-   		speakerWaiting = false;
+   		//listenerReady.wake();
+   		while(listenerWaiting){
+   			listenerQueue.sleep(); //puts next listener in queue
+   		}
+
+   		listenerWaiting = true;
+
+   		while(!speakerWaiting || delivered){ //puts listener to sleep if there are no speakers ready or the message has been delivered
+   			listenerReceive.sleep();
+   		}
+   		listenerQueue.wake(); 
    		lock.release();
    		return message;
 
-	return 0;
     }
     
-    private Lock lock;
-    private Condition speakerReady;
-    private Condition listenerReady;
-    private boolean speakerWaiting;
-    private boolean listenerWaiting;
-
-    private int message;
-    private int sent;
-    private int recieved;
-
 }
