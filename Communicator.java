@@ -19,9 +19,10 @@ public class Communicator {
     private boolean listenerWaiting; //used to tell if there is a listener waiting
     
     private Condition speakerSend; //used to send message
-    private Condition listenerreceive; //used to receive message
+    private Condition listenerReceive; //used to receive message
 
-    private boolean delivered; //used to confirm speaker message is delivered
+    private boolean sent; //used to confirm speaker message has been sent
+    private boolean received; //used to confirm listener has been received
 
     private int message; //the message
     /**
@@ -34,8 +35,6 @@ public class Communicator {
     speakerWaiting = false;
     listenerWaiting = false;
     delivered = false;
-
-
     }
 
     /**
@@ -53,16 +52,17 @@ public class Communicator {
     	while(speakerWaiting){
     		speakerQueue.sleep(); //puts next speaker in queue
     	}
+
     	speakerWaiting = true;
-    	
-    	while(!listenerWaiting){ //if there are no listeners waiting, then wake the receive queue to send message
+    	message  = word;
+
+    	while(!listenerWaiting || !delivered || !sent){ //if there are no listeners waiting, then wake the receive queue to send message
     		listenerReceive.wake();
     		speakerSend.sleep();
-    		delivered = true;
     	}
-    	message  = word;
     	
-
+    	sent = true;
+    	speakerWaiting = false;
     	speakerQueue.wake(); //wakes next speaker
     	lock.release(); 
     }
@@ -83,9 +83,14 @@ public class Communicator {
 
    		listenerWaiting = true;
 
-   		while(!speakerWaiting || delivered){ //puts listener to sleep if there are no speakers ready or the message has been delivered
+   		while(!speakerWaiting || !sent){ //puts listener to sleep if there are no speakers ready or the message has been delivered
    			listenerReceive.sleep();
    		}
+   		speakerSend.wake();
+   		
+   		delivered = true;
+   		listenerWaiting = false;
+
    		listenerQueue.wake(); 
    		lock.release();
    		return message;
