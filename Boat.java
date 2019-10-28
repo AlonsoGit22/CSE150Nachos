@@ -38,10 +38,10 @@ public class Boat
   boatMolokai = false; // The boat is not on Oahu at the start
   boatEmpty = true; // check if the boat is empty before getting on
   onlyLock = new Lock(); // protect code
-  adultOnOahu = new Condtion(OnlyLock); // Condition for adults on Oahu
-  adultOnMolokai = new Condtion(OnlyLock); // Condition for adults on Molokai
-  childOnOahu = new Condtion(OnlyLock); // Condition for children on Oahu
-  childOnMolokai = new Condtion(OnlyLock); // Condition for children on Molokai
+  adultOnOahu = new Condtion(onlyLock); // Condition for adults on Oahu
+  adultOnMolokai = new Condtion(onlyLock); // Condition for adults on Molokai
+  childOnOahu = new Condtion(onlyLock); // Condition for children on Oahu
+  childOnMolokai = new Condtion(onlyLock); // Condition for children on Molokai
   // Create threads here. See section 3.4 of the Nachos for Java
 	// Walkthrough linked from the projects page.
   for(int i=0;i<adults;i++){
@@ -90,9 +90,9 @@ public class Boat
       }
     }
   }else{
-      adulMolokai += 1;
+      adultMolokai += 1;
       boatEmpty = true;
-      childMolokai.wakeAll();
+      childOnMolokai.wakeAll();
       adultOnOahu.sleep();
     }
 
@@ -110,7 +110,7 @@ onlyLock.release();
         if(childOahu > 1){ // boatOahu is true, boat is empty, and childOahu > 1.
           childOnOahu.wakeAll();
           lastSeenOahuAdults = adultOahu;
-          lastSeenOahuChild = childOahu;
+          lastSeenOahuChildren = childOahu;
           bg.ChildRideToMolokai();
           childOahu -= 1;
           bg.ChildRowToMolokai();
@@ -119,7 +119,7 @@ onlyLock.release();
           boatEmpty = false;
 
         // A child will get on the boat if it is on the island Oahu, if it is empty, and there are no longer adults on the island.
-        }else if(adultOahu = 0){  // boatOahu is true, boat is empty, and adultOahu is 0.
+      }else if(adultOahu == 0){  // boatOahu is true, boat is empty, and adultOahu is 0.
           bg.ChildRowToMolokai();
           childOahu -= 1;
           boatOahu = false;
@@ -171,6 +171,6 @@ onlyLock.release();
   private static int adultMolokai = 0;
   private static int lastSeenOahuAdults = 0;
 	private static int lastSeenOahuChildren = 0;
-  private static Condition adultOahu, adultMolokai, childOahu, childMolokai;
+  private static Condition adultOnOahu, adultOnMolokai, childOnOahu, childOnMolokai;
 
 }
