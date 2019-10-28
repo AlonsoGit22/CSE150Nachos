@@ -50,6 +50,9 @@ public class Condition2 {
 	if (!waitQueue.isEmpty()){
 		boolean intStatus = Machine.interrupt().disable();
 		KThread thread = waitQueue.removeFirst();
+		if (thread != null){
+			thread.ready();
+		}
 		Machine.interrupt().restore(intStatus);
 	}
     }
