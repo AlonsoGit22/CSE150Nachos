@@ -38,10 +38,10 @@ public class Boat
   boatMolokai = false; // The boat is not on Oahu at the start
   boatEmpty = true; // check if the boat is empty before getting on
   onlyLock = new Lock(); // protect code
-  adultOnOahu = new Condtion(onlyLock); // Condition for adults on Oahu
-  adultOnMolokai = new Condtion(onlyLock); // Condition for adults on Molokai
-  childOnOahu = new Condtion(onlyLock); // Condition for children on Oahu
-  childOnMolokai = new Condtion(onlyLock); // Condition for children on Molokai
+  adultOnOahu = new Condtion2(onlyLock); // Condition for adults on Oahu
+  adultOnMolokai = new Condtion2(onlyLock); // Condition for adults on Molokai
+  childOnOahu = new Condtion2(onlyLock); // Condition for children on Oahu
+  childOnMolokai = new Condtion2(onlyLock); // Condition for children on Molokai
   // Create threads here. See section 3.4 of the Nachos for Java
 	// Walkthrough linked from the projects page.
   for(int i=0;i<adults;i++){
@@ -171,8 +171,8 @@ onlyLock.release();
   private static int adultMolokai = 0;
   private static int lastSeenOahuAdults = 0;
 	private static int lastSeenOahuChildren = 0;
-  private static Condition adultOnOahu;
-  private static Condition adultOnMolokai;
-  private static Condition childOnOahu;
-  private static Condition childOnMolokai;
+  private static Condition2 adultOnOahu;
+  private static Condition2 adultOnMolokai;
+  private static Condition2 childOnOahu;
+  private static Condition2 childOnMolokai;
 }
