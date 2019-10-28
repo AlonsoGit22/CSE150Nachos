@@ -79,13 +79,17 @@ public class Boat
    onlyLock.acquire();
       while(weLiveInASociety){
 		//if the Boat is  on Oahu , it's empty, and there is 1 child
-    if(boatOahu && boatEmpty && childOahu == 1){ // boatOahu is true, boat is empty, and childOahu == 1.
+    if(boatOahu){
+      if(boatEmpty){
+    if(childOahu == 1){ // boatOahu is true, boat is empty, and childOahu == 1.
       adultOnOahu.wakeAll();
       adultOahu -= 1;
       boatEmpty = false;
       boatOahu = false;
       bg.AdultRowToMolokai();
-    }else{
+      }
+    }
+  }else{
       adulMolokai += 1;
       boatEmpty = true;
       childMolokai.wakeAll();
@@ -101,7 +105,9 @@ onlyLock.release();
       onlyLock.acquire();
       while(weLiveInASociety){
         // A child will get on the boat if it is on the island Oahu, if it is empty, and there is more than one child on the island
-        if(boatOahu && boatEmpty && childOahu > 1){ // boatOahu is true, boat is empty, and childOahu > 1.
+        if(boatOahu){
+        if(boatEmpty){
+        if(childOahu > 1){ // boatOahu is true, boat is empty, and childOahu > 1.
           childOnOahu.wakeAll();
           lastSeenOahuAdults = adultOahu;
           lastSeenOahuChild = childOahu;
@@ -113,7 +119,7 @@ onlyLock.release();
           boatEmpty = false;
 
         // A child will get on the boat if it is on the island Oahu, if it is empty, and there are no longer adults on the island.
-        }else if(boatOahu && boatEmpty && adultOahu = 0){  // boatOahu is true, boat is empty, and adultOahu is 0.
+        }else if(adultOahu = 0){  // boatOahu is true, boat is empty, and adultOahu is 0.
           bg.ChildRowToMolokai();
           childOahu -= 1;
           boatOahu = false;
@@ -123,7 +129,9 @@ onlyLock.release();
           childOnMolokai.sleep();
 
         // if the boat is not on Oahu, then it is on Molokai, and it is empty because
-        }else{
+          }
+        }
+      }else{
           if(lastSeenOahuAdults > 0){
           childMolokai +=1;
           childMolokai +=1;
