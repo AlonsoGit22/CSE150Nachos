@@ -32,9 +32,12 @@ public class Communicator {
     lock = new Lock();
     speakerQueue = new Condition(lock);
     listenerQueue = new Condition(lock);
+    speakerSend = new Condition(lock);
+    listenerReceive = new Condition(lock);
     speakerWaiting = false;
     listenerWaiting = false;
     received = false;
+    sent = false;
     }
 
     /**
@@ -83,7 +86,7 @@ public class Communicator {
 
    		listenerWaiting = true;
 
-   		while(!speakerWaiting || !sent){ //puts listener to sleep if there are no speakers ready or the message has been received
+   		while(!speakerWaiting){ //puts listener to sleep if there are no speakers ready or the message has been received
    			listenerReceive.sleep();
    		}
    		speakerSend.wake();
@@ -94,7 +97,5 @@ public class Communicator {
    		listenerQueue.wake(); 
    		lock.release();
    		return message;
-
     }
-    
 }
