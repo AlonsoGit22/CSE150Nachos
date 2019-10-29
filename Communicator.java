@@ -17,6 +17,8 @@ public class Communicator {
     private int speaker; //used to tell if there is a speaker
     private int listener; //used to tell if there is a listener
     //private boolean sent; //used to confirm speaker message has been sent
+    private boolean speakerReady;
+    private boolean listenerReady;
     private boolean received; //used to confirm listener has been received
 
     private int message; //the message
@@ -30,9 +32,11 @@ public class Communicator {
         lock = new Lock();  
         speakerSend = new Condition(lock);
         listenerReceive = new Condition(lock);
-        speaker = 0;
+        //speaker = 0;
         listener = 0;
-    
+
+        speakerReady = false;
+        listenerReady = false;
         received = false; 
     }
 
@@ -48,19 +52,21 @@ public class Communicator {
      */
     public void speak(int word) {
         lock.acquire();
-        while(speaker == 0){
+        while(speakerReady){
             speakerSend.sleep(); //puts next speaker in queue
         }
-        speaker++; //
+        speakerReady = true; //
         message = word;
 
 
-        while(listener != 0 || !received){ //if there are no listeners waiting, then wake the receive queue to send message
+        while(listener == 0 || !received){ //if there are no listeners waiting, then wake the receive queue to send message
             listenerReceive.wake();
             speakerSend.sleep();
         }
         listener--;
-        received = false;
+        received = false;//sets receive as false after sending the other messages
+        listenReceive.wake(); //wakes next listener
+        //speaker--;
         speakerSend.wake(); //wakes next speaker
         //listenerReceive.wake(); //this might cause the communicator to return the word twice
         
@@ -77,22 +83,24 @@ public class Communicator {
     public int listen() {
 
         lock.acquire();
-        //listenerReady.wake();
-        while(listener == 0){
-            listenerReceive.sleep(); //puts next listener in queue
-        }
         listener++;
-
-        while(speaker == 0){ //puts listener to sleep if there are no speakers ready or the message has been received
+        //listenerReady.wake();
+        while(listener > 0 && speakerReady){
+            listenerReceive.wake(); //puts next listener in queue
+        }
+        
+        while(!speakerReady){ //puts listener to sleep if there are no speakers ready or the message has been received
             listenerReceive.sleep();
         }
-        //speakerSend.wake();
+        listen--;
+        listenerReceive.sleep();
+        speakerSend.wake();
 
         received = true;
         //listenerWaiting = false;
 
-        //listenerQueue.wake(); 
-        speaker--;
+        //listenerReceive.wake(); 
+        
         lock.release();
         return message;
     }
