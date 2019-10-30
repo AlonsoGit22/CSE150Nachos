@@ -49,7 +49,7 @@ public class Communicator {
         lock.acquire();
         speaker++;
 
-        while(listen == 0 || sent){
+        while(listener == 0 || sent){
             speakerSend.sleep(); //puts current speaker to sleep if there are no more listeners
         }
 
@@ -76,7 +76,7 @@ public class Communicator {
             speakerSend.wake();
             listenerReceive.sleep();
         }
-        listenerReceive.wake();
+        //listenerReceive.wake();
 
         messageReceive = messageSend; //listener has the message now
         sent = false; //tells that the message is not sent for the next speaker
