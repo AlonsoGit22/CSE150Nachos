@@ -176,11 +176,11 @@ public class PriorityScheduler extends Scheduler {
 		 KThread nextT = null;
          
 		 for (Iterator<KThread> ts = waitQueue.iterator(); ts.hasNext();) {  
-             KThread thread = ts.next(); 
-             int priority = getThreadState(thread).getEffectivePriority();
+             KThread t = ts.next(); 
+             int priority = getThreadState(t).getEffectivePriority();
              
              if (nextT == null || priority > getThreadState(nextT).getEffectivePriority()) { 
-                 nextT = thread;
+                 nextT = t;
              }
          }
 		 
@@ -197,8 +197,8 @@ public class PriorityScheduler extends Scheduler {
 			effectivePriority = priorityMinimum;
 			
 			for (Iterator<KThread> it = waitQueue.iterator(); it.hasNext();) {  
-				KThread thread = it.next(); 
-				int priority = getThreadState(thread).getEffectivePriority();
+				KThread t = it.next(); 
+				int priority = getThreadState(t).getEffectivePriority();
 				
 				if ( priority > effectivePriority) { 
 					effectivePriority = priority;
@@ -229,9 +229,9 @@ public class PriorityScheduler extends Scheduler {
 	    // implement me (if you want)
 	    
 	    for (Iterator<KThread> it = waitQueue.iterator(); it.hasNext();) {  
-	    	KThread currentThread = it.next(); 
-	    	int  priority = getThreadState(currentThread).getPriority();
-	    	System.out.print("Thread: " + currentThread + "\t  Priority: " + priority + "\n");
+	    	KThread currentT = it.next(); 
+	    	int  pri = getThreadState(currentT).getPriority();
+	    	System.out.print("Thread: " + currentT + "\t  Priority: " + pri + "\n");
 	    }
 	}
 
@@ -247,7 +247,19 @@ public class PriorityScheduler extends Scheduler {
 
     private boolean dirty;
 
-    private int effectivePriority; 
+    private int effectivePriority;
+
+	@Override
+	public boolean contains(KThread thread2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean empty() {
+		// TODO Auto-generated method stub
+		return false;
+	} 
     }
 
     /**
@@ -287,20 +299,20 @@ public class PriorityScheduler extends Scheduler {
 	public int getEffectivePriority() {
 	    // implement me
 		
-		int maxEffective = this.priority;
+		int maxEffect = this.priority;
 		
         if (dirty) {
             for (Iterator<ThreadQueue> it = myResource.iterator(); it.hasNext();) {  
                 PriorityQueue pg = (PriorityQueue)(it.next()); 
-                int effective = pg.getEffectivePriority();
+                int effect = pg.getEffectivePriority();
                 
-                if (maxEffective < effective) {
-                    maxEffective = effective;
+                if (maxEffect < effect) {
+                    maxEffect = effect;
                 }
             }
         }
         
-	    return maxEffective;
+	    return maxEffect;
 	}
 
 	/**
