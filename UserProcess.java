@@ -428,11 +428,12 @@ public class UserProcess {
         }
     }
 	
-    /*
+    
 	private int handleRead(int fd, int buffer, int size){
         OpenFile file;
-
-        int 
+        FileDescriptor currentFile;
+        byte[] 
+        currentFile = descriptorManager[fd];
 
         if(fd < 0 || handle > 15){
             return -1;
@@ -446,11 +447,86 @@ public class UserProcess {
             reurn -1;
         }
 
-        //Reading the array
-        if
+        byte[] readStream = new byte[size];
+        //Reading the array of the readStream
+        int readBytes = file.read(readStream, 0, size)
+
+        if (readBytes < 0){
+            return -1;
+        }
+        else{
+            int writeBytes = writeVirtualMemory(fd,readStream,0,readBytes)
+
+            if (writeBytes < 0){
+                return -1;
+            }
+            else{
+                return writeBytes;
+            }
+        }
 
 	}
-    */
+
+    private int handleWrite(int handle, int buffer, int size) {
+        if (handle < 0 || handle > 15) {
+            Lib.debug(dbgProcess, "Handle not in range, cannot proceed...");
+            return -1;
+        } else { 
+            if (size < 0) {
+                Lib.debug(dbgProcess, "Negative file size, cannot procceed...");
+                return -1;
+            } else if (size == 0) {
+                Lib.debug(dbgProcess, "File size is zero.");
+                return 0;
+            }
+        }
+        
+        if (descriptorManager[handle] == null) {
+            Lib.debug(dbgProcess, "File is NULL, cannot proceed...");
+            return -1;
+        }
+        
+        byte[] writer = new byte[size];
+        int length = readVirtualMemory(buffer, writer, 0, size);
+        int count = descriptorManager[handle].write(writer, 0, length);
+        if (count == -1) {
+            Lib.debug(dbgProcess, "Error, cannot proceed...");
+            return -1;
+        } else return count;
+    }
+    
+    private int handleClose(int handle) {
+        if (handle < 0 || handle > 15 || descriptorManager[handle] == null) {
+            Lib.debug(dbgProcess, "Handle not in range or not valid, cannot proceed...");
+            return -1;
+        } else {
+            descriptorManager[handle].close();
+            descriptorManager[handle] = null;
+        }
+        return 0;    
+    }
+    
+    private int handleUnlink(int vaddr) {
+        String fileName = readVirtualMemoryString(vaddr,256);
+        if (fileName == null || vaddr < 0) {
+            Lib.debug(dbgProcess, "Virtual address or file name not valid, cannot proceed...");
+            return -1;
+        }
+        
+        for(int i = 0; i <= 15; i++) {
+            if (descriptorManager[i] != null && descriptorManager[i].getName().equals(fileName)){
+                descriptorManager[i] = null;
+                break;
+            }
+        }
+        boolean fileRemoved = ThreadedKernel.fileSystem.remove(fileName);
+        if (!fileRemoved) {
+            Lib.debug(dbgProcess, "Unable to unlink file...");
+            return -1;
+        }
+        return 0;
+    }
+
     
 
     private static final int
