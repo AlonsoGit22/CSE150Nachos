@@ -384,7 +384,7 @@ public class UserProcess {
         int currentFDint;
 
         currentFDint = findEmptyFD();
-        filename = readVirtualMemory(vaddr, maxFileName);
+        filename = readVirtualMemoryString(vaddr, maxFileName);
         currentFile = UserKernel.fileSystem.open(filename, false);//using false since not creating
 
 
@@ -397,45 +397,46 @@ public class UserProcess {
             return -1;
         }
 
-        if (currentFDint == -1){
+        if (currentFile == null){
             return -1;
         }
         else{
-            if(currentFile == null){
+            if(currentFDint <0){
                 return -1;
             }
             else{
-                descriptorManager[currentFDint].filename == filename;
-                descriptorManager[currentFDint].file == currentFile;
+                descriptorManager[currentFDint].filename = filename;
+                descriptorManager[currentFDint].file = currentFile;
                 return currentFDint;
             }
         }
     }
 	
     
-	private int handleRead(int handle, int buffer, int size){
+	private int handleRead(int fd, int buffer, int size){
         //OpenFile file;
         FileDescriptor currentFD;
+        byte[] readStream;
+        int readBytes;
 
-        currentFD = descriptorManager[handle];
+        currentFD = descriptorManager[fd];
+        readStream = new byte[size];
+        readBytes = currentFD.file.read(readStream, 0, size);
 
-        if(handle < 0 || handle > 15 || descriptorManager[handle].file == null){
+        if(fd < 0 || fd > 15 ){
             return -1;
         }
-        else if(size <= 0){
+        else if(size <= 0 || descriptorManager[fd].file == null){
             return -1; 
         }
-        //file = descriptorManager[fd];
 
-        byte[] readStream = new byte[size];
-        //Reading the array of the readStream
-        int readBytes = currentFD.file.read(readStream, 0, size);
-
-        if (readBytes < 0){
+        
+        //Reading the array 
+        else if (readBytes < 0){
             return -1;
         }
         else{
-            int writeBytes = writeVirtualMemory(handle,readStream,0,readBytes);
+            int writeBytes = writeVirtualMemory(fd,readStream,0,readBytes);
 
             if (writeBytes < 0){
                 return -1;
@@ -446,6 +447,7 @@ public class UserProcess {
         }
 
 	}
+    /*
 
     private int handleWrite(int handle, int buffer, int size) {
         if (handle < 0 || handle > 15) {
@@ -506,6 +508,7 @@ public class UserProcess {
         }
         return 0;
     }
+    */
 
     
 
@@ -561,7 +564,9 @@ public class UserProcess {
         return handleOpen(a0);
 
     case syscallRead:
-    	return syscallRead(a0, a1, a2);
+    	return handleRead(a0, a1, a2);
+
+    /*
     
     case syscallWrite:
         return handleWrite(a0, a1, a2);
@@ -571,7 +576,7 @@ public class UserProcess {
 
     case syscallUnlink:
         return handleUnlink(a0);
-
+    */
 
 	default:
 	    Lib.debug(dbgProcess, "Unknown syscall " + syscall);
@@ -642,7 +647,7 @@ public class UserProcess {
     private int searchFD(String fileName){
 
     	for(int i = 0; i < maxFileDescriptor; i++){
-    		if (descriptorManager[i].fileName == fileName){
+    		if (descriptorManager[i].fileName.equals(fileName){
     			return i;
     		}
 
