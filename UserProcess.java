@@ -368,22 +368,22 @@ public class UserProcess {
     	}
 
     	if(currentFile == null){
-    		//lib.dug(d333bgProcess, "File could not be created");
+    		//lib.dug(dbgProcess, "File could not be created");
     		return -1;
     	}
     	else{
-    		int currentFD = findEmptyFD();
-    		descriptorManager[currentFD].file = currentFile;
-    		return currentFD;
+    		int currentFDint = findEmptyFD();
+    		descriptorManager[currentFDint].file = currentFile;
+    		return currentFDint;
     	}
     }
 
     private int handleOpen(int vaddr){
         String filename;
         OpenFile currentFile;
-        int currentFD;
+        int currentFDint;
 
-        currentFD = findEmptyFD();
+        currentFDint = findEmptyFD();
         filename = readVirtualMemory(vaddr, maxFileName);
         currentFile = UserKernel.fileSystem.open(filename, false);//using false since not creating
 
@@ -397,7 +397,7 @@ public class UserProcess {
             return -1;
         }
 
-        if (currentFD == -1){
+        if (currentFDint == -1){
             return -1;
         }
         else{
@@ -405,8 +405,9 @@ public class UserProcess {
                 return -1;
             }
             else{
-                descriptorManager[currentFD] = currentFile;
-                return currentFD;
+                descriptorManager[currentFDint].filename == filename;
+                descriptorManager[currentFDint].file == currentFile;
+                return currentFDint;
             }
         }
     }
@@ -414,11 +415,11 @@ public class UserProcess {
     
 	private int handleRead(int handle, int buffer, int size){
         //OpenFile file;
-        FileDescriptor currentFile;
+        FileDescriptor currentFD;
 
-        currentFile = descriptorManager[handle];
+        currentFD = descriptorManager[handle];
 
-        if(handle < 0 || handle > 15 || currentFile[handle] == null){
+        if(handle < 0 || handle > 15 || descriptorManager[handle].file == null){
             return -1;
         }
         else if(size <= 0){
@@ -428,13 +429,13 @@ public class UserProcess {
 
         byte[] readStream = new byte[size];
         //Reading the array of the readStream
-        int readBytes = currentFile.file.read(readStream, 0, size)
+        int readBytes = currentFD.file.read(readStream, 0, size);
 
         if (readBytes < 0){
             return -1;
         }
         else{
-            int writeBytes = writeVirtualMemory(handle,readStream,0,readBytes)
+            int writeBytes = writeVirtualMemory(handle,readStream,0,readBytes);
 
             if (writeBytes < 0){
                 return -1;
@@ -559,7 +560,7 @@ public class UserProcess {
     case syscallOpen:
         return handleOpen(a0);
 
-    case syscallRead
+    case syscallRead:
     	return syscallRead(a0, a1, a2);
     
     case syscallWrite:
@@ -617,6 +618,7 @@ public class UserProcess {
     	private String filename = ""; //
     	private OpenFile file = null; //
 
+        private boolean remove = false;
 
     }
     private FileDescriptor descriptorManager[]  = new FileDescriptor[maxFileDescriptor];
@@ -637,10 +639,10 @@ public class UserProcess {
 
     }
 
-    private int searchFD(String filename){
+    private int searchFD(String fileName){
 
     	for(int i = 0; i < maxFileDescriptor; i++){
-    		if (descriptorManager[i].filename == filename){
+    		if (descriptorManager[i].fileName == fileName){
     			return i;
     		}
 
