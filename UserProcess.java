@@ -355,54 +355,37 @@ public class UserProcess {
 
     private int handleCreat(int vaddr){
     	String filename;
-    	OpenFile file;
+    	OpenFile currentFile;
 
 
     	filename = this.readVirtualMemoryString(vaddr, maxFileName);
         //ThreadedKernel.fileSystem.open(java.lang.string, boolean) boolean: True when creating and opening. False when just opening
-        file = ThreadedKernel.fileSystem.open(filename, true);
+        currentFile = UserKernel.fileSystem.open(filename, true);
 
     	if (filename == null){
     		//Lib.debug(dbgProcess, "File name cannot be null. Please enter a name");
     		return -1;
     	}
 
-    	if(file == null){
+    	if(currentFile == null){
     		//lib.dug(d333bgProcess, "File could not be created");
     		return -1;
     	}
     	else{
     		int currentFD = findEmptyFD();
-    		descriptorManager[currentFD] = file;
+    		descriptorManager[currentFD].file = currentFile;
     		return currentFD;
     	}
     }
-    /*
-    public int readVirtualMemory(int vaddr, byte[] data, int offset,
-                 int length) {
-    Lib.assertTrue(offset >= 0 && length >= 0 && offset+length <= data.length);
 
-    byte[] memory = Machine.processor().getMemory();
-    
-    // for now, just assume that virtual addresses equal physical addresses
-    if (vaddr < 0 || vaddr >= memory.length)
-        return 0;
-
-    int amount = Math.min(length, memory.length-vaddr);
-    System.arraycopy(memory, vaddr, data, offset, amount);
-
-    return amount;
-    }
-    */
-    
-    private int handleOpen(int vaddr)){
+    private int handleOpen(int vaddr){
         String filename;
-        String file;
+        OpenFile currentFile;
         int currentFD;
 
         currentFD = findEmptyFD();
         filename = readVirtualMemory(vaddr, maxFileName);
-        file = ThreadedKernel.fileSystem.open(filename, false);//using false since not creating
+        currentFile = UserKernel.fileSystem.open(filename, false);//using false since not creating
 
 
 
@@ -418,44 +401,40 @@ public class UserProcess {
             return -1;
         }
         else{
-            if(file == null){
+            if(currentFile == null){
                 return -1;
             }
             else{
-                descriptorManager[currentFD] = file;
+                descriptorManager[currentFD] = currentFile;
                 return currentFD;
             }
         }
     }
 	
     
-	private int handleRead(int fd, int buffer, int size){
-        OpenFile file;
+	private int handleRead(int handle, int buffer, int size){
+        //OpenFile file;
         FileDescriptor currentFile;
-        byte[] 
-        currentFile = descriptorManager[fd];
 
-        if(fd < 0 || handle > 15){
+        currentFile = descriptorManager[handle];
+
+        if(handle < 0 || handle > 15 || currentFile[handle] == null){
             return -1;
         }
         else if(size <= 0){
             return -1; 
         }
-        file = descriptorManager[fd];
-
-        if(file == null){
-            reurn -1;
-        }
+        //file = descriptorManager[fd];
 
         byte[] readStream = new byte[size];
         //Reading the array of the readStream
-        int readBytes = file.read(readStream, 0, size)
+        int readBytes = currentFile.file.read(readStream, 0, size)
 
         if (readBytes < 0){
             return -1;
         }
         else{
-            int writeBytes = writeVirtualMemory(fd,readStream,0,readBytes)
+            int writeBytes = writeVirtualMemory(handle,readStream,0,readBytes)
 
             if (writeBytes < 0){
                 return -1;
@@ -507,7 +486,7 @@ public class UserProcess {
     }
     
     private int handleUnlink(int vaddr) {
-        String fileName = readVirtualMemoryString(vaddr,256);
+        String fileName = readVirtualMemoryString(vaddr,maxFileName);
         if (fileName == null || vaddr < 0) {
             Lib.debug(dbgProcess, "Virtual address or file name not valid, cannot proceed...");
             return -1;
@@ -579,10 +558,18 @@ public class UserProcess {
     
     case syscallOpen:
         return handleOpen(a0);
-/*
-    case syscallWrite
-    	return syscallWrite(a0, a1, a2);
-    */
+
+    case syscallRead
+    	return syscallRead(a0, a1, a2);
+    
+    case syscallWrite:
+        return handleWrite(a0, a1, a2);
+
+    case syscallClose:
+        return handleClose(a0);
+
+    case syscallUnlink:
+        return handleUnlink(a0);
 
 
 	default:
@@ -622,22 +609,6 @@ public class UserProcess {
 	}
     }		
 
-    /*
-    OpenFile executable = ThreadedKernel.fileSystem.open(name, false);
-	if (executable == null) {
-	    Lib.debug(dbgProcess, "\topen failed");
-	    return false;
-	}
-
-	String fileSystemName = Config.getString("ThreadedKernel.fileSystem");
-	if (fileSystemName != null)
-	    fileSystem = (FileSystem) Lib.constructObject(fileSystemName);
-	else if (Machine.stubFileSystem() != null)
-	    fileSystem = Machine.stubFileSystem();
-	else
-	    fileSystem = null;
-    */
-
     public class FileDescriptor{
     	public FileDescriptor(){
     		//will handle a single FileDescriptor
@@ -656,8 +627,7 @@ public class UserProcess {
 
     private int findEmptyFD(){
     	for(int i = 0; i < maxFileDescriptor; i++){
-    		if (descriptorManager[i].filename == null){
-    			descriptorManager[i] = file;
+    		if (descriptorManager[i].file == null){
     			return i;
     		}
 
