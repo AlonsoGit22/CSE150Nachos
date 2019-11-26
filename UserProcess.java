@@ -441,7 +441,7 @@ public class UserProcess {
       else if(size <= 0){
          return -1;
       }
-      else if(descriptorManager[handle].file == null){
+      else if(descriptorManager[handle].currentFile == null){
         return -1;
       }
 
