@@ -13,6 +13,7 @@ import nachos.machine.Lib;
 import nachos.machine.Machine;
 import nachos.threads.PriorityScheduler.PriorityQueue;
 import nachos.threads.PriorityScheduler.ThreadState;
+import nachos.threads.PriorityScheduler.ThreadWaiter;
 
 /**
  * A scheduler that chooses threads using a lottery.
@@ -325,7 +326,7 @@ public class LotteryScheduler extends PriorityScheduler {
 			int sum = priority;
 			int qSum = 0;
 			
-			Iterator<ThreadQueue> it = myResource.iterator();
+			Iterator<ThreadQueue> it = acquiredpqs.iterator();
 			LotteryQueue q;
 			
 			while (it.hasNext()) {
@@ -351,19 +352,19 @@ public class LotteryScheduler extends PriorityScheduler {
 		
 		// Mark the waitQ the queue that this thread is waiting on
 		public void waitForAccess(ThreadQueue waitQ) {
-			myResource.add(waitQ);
+			waitingpqs.add(waitQ);
 		}
 		
 		// Thread acquires a queue
 		public void acquire(ThreadQueue waitQ) {
-			myResource.remove(waitQ);
-			myResource.add(waitQ);
+			waitingpqs.remove(waitQ);
+			acquiredpqs.add(waitQ);
 			effectivePriorityUpdated();
 		}
 		
 		// Unacquire the thread from the queue
 		public void unacquire(ThreadQueue noQ) {
-			myResource.remove(noQ);
+			acquiredpqs.remove(noQ);
 			effectivePriorityUpdated();
 		}
 		
@@ -374,7 +375,7 @@ public class LotteryScheduler extends PriorityScheduler {
 			// starter = true;
 			LotteryQueue q;
 			Iterator<ThreadQueue> it;
-			it = myResource.iterator();
+			it = waitingpqs.iterator();
 			
 			while (it.hasNext()) {
 				q = (LotteryQueue) it.next();
