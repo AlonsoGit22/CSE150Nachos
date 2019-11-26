@@ -383,7 +383,7 @@ public class UserProcess {
       }
       else{
         for (int i=0; i < maxFileDescriptor; i++){
-          else(descriptorManager[i] == null){
+          if(descriptorManager[i] == null){
             descriptorManager[i] = file;
             return i;
           }
@@ -415,7 +415,7 @@ public class UserProcess {
     }
     else{
       for (int i=0; i < maxFileDescriptor; i++){
-        else(descriptorManager[i] == null){
+        if(descriptorManager[i] == null){
             descriptorManager[i] = file;
             return i;
         }
@@ -738,40 +738,28 @@ public class UserProcess {
       public FileDescriptor(){
          //will handle a single FileDescriptor
       }
-
       private String filename = ""; //
       private OpenFile file = null; //
-
       private boolean remove = false;
-
    }
    private FileDescriptor descriptorManager[]  = new FileDescriptor[maxFileDescriptor];
    public static final int maxFileDescriptor = 16;
    public static final int maxFileName = 256;
-
-
-
    private int findEmptyFD(){
       for(int i = 0; i < maxFileDescriptor; i++){
          if (descriptorManager[i].file == null){
             return i;
          }
-
       }
       //lib.debug(dbgProcess, "Descriptors are full");
       return -1; //use -1 to indicate the descriptors are full
-
    }
-
    private int searchFD(String fileName){
-
       for(int i = 0; i < maxFileDescriptor; i++){
          if (descriptorManager[i].fileName.equals(fileName){
             return i;
          }
-
       }
-
       return -1;//this indicates that there is no file found under that name
    }
 */
